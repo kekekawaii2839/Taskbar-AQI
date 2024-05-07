@@ -1,4 +1,4 @@
-#define DEBUG
+// #define DEBUG
 
 #include "taskbarWindow.h"
 
@@ -8,19 +8,58 @@
 
 taskbarWindow* w;
 
+void DrawTextToScreen(HWND hwnd, const wchar_t* text) {
+    ID2D1Factory* d2dFactory = nullptr;
+    IDWriteFactory* dwriteFactory = nullptr;
+    ID2D1HwndRenderTarget* renderTarget = nullptr;
+
+    // init DirectWrite and Direct2D
+    D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
+    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&dwriteFactory));
+
+    // create render target
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+    D2D1_SIZE_U size = D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top);
+    D2D1_RENDER_TARGET_PROPERTIES properties = D2D1::RenderTargetProperties(
+        D2D1_RENDER_TARGET_TYPE_DEFAULT,
+        D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+        0, 0, D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE);
+    d2dFactory->CreateHwndRenderTarget(properties, D2D1::HwndRenderTargetProperties(hwnd, size, D2D1_PRESENT_OPTIONS_IMMEDIATELY), &renderTarget);
+
+    renderTarget->BeginDraw();
+    renderTarget->Clear(D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f)); // transparent
+
+    IDWriteTextFormat* textFormat;
+    dwriteFactory->CreateTextFormat(L"Consolas", NULL, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 20.0f, L"", &textFormat);
+    textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+    textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+    ID2D1SolidColorBrush* brush;
+    renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red), &brush);
+
+    renderTarget->DrawText(text, wcslen(text), textFormat, D2D1::RectF(0, 0, static_cast<float>(size.width), static_cast<float>(size.height)), brush);
+    renderTarget->EndDraw();
+
+    brush->Release();
+    textFormat->Release();
+    renderTarget->Release();
+    dwriteFactory->Release();
+    d2dFactory->Release();
+}
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
-        // case WM_DESTROY:
-        //     w->~taskbarWindow();
-        //     PostQuitMessage(0);
-        //     return 0;
-        // case WM_PAINT:
-        //     w->Paint();
-        //     return 0;
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+        case WM_PAINT:
+            DrawTextToScreen(hwnd, L"Hello, World!");
+            return 0;
         // case WA_ACTIVE:
-        //     w->Paint();
+        //     DrawTextToScreen(hwnd, L"Hello, World!");
         //     return 0;
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);

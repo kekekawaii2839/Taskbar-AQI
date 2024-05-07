@@ -1,5 +1,4 @@
 #define WINVER 0x0605
-#define DEBUG
 
 #include <windows.h>
 #include <gdiplus.h>
@@ -35,16 +34,9 @@ private:
     bool isWin11;
 
     double DPIScale;
-    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-    ULONG_PTR gdiplusToken;
-
-    ID2D1Factory* d2dFactory;
-    IDWriteFactory* dwriteFactory;
-    ID2D1HwndRenderTarget* renderTarget;
 
     int DPI(int);
     void InitWindowPos();
-    void InitD2D1();
 
 public:
     taskbarWindow(
@@ -54,9 +46,8 @@ public:
         HINSTANCE hInstance,
         int nCmdShow
     );
-    ~taskbarWindow();
+    ~taskbarWindow() {}
 
     HWND GetHwnd();
-    bool Paint();
     void ShowWindow();
 };
