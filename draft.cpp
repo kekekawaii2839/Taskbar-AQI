@@ -1,12 +1,15 @@
-// #define DEBUG
+#define DEBUG
 
 #include "taskbarWindow.h"
+#include "AQI.h"
 
 #ifdef DEBUG
 #include <iostream>
 #endif
 
 taskbarWindow* w;
+
+wchar_t draw_str[256];
 
 void DrawTextToScreen(HWND hwnd, const wchar_t* text) {
     ID2D1Factory* d2dFactory = nullptr;
@@ -56,7 +59,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             PostQuitMessage(0);
             return 0;
         case WM_PAINT:
-            DrawTextToScreen(hwnd, L"Hello, World!");
+            DrawTextToScreen(hwnd, draw_str);
             return 0;
         // case WA_ACTIVE:
         //     DrawTextToScreen(hwnd, L"Hello, World!");
@@ -78,6 +81,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     w = new taskbarWindow("MyGO!!!!!", "MyGO!!!!!", 200, hInstance, nCmdShow);
     w->ShowWindow();
+
+    AQI aqi("http://www.stateair.net/web/rss/1/1.xml");
+    aqi.fetch_24_hours_data();
+    swprintf_s(draw_str, L"%d", aqi.get_latest_pm25());
+    #ifdef DEBUG
+    std::cout<< aqi.aqiData[0].pm25 << std::endl;
+    std::cout << "PM2.5: " << aqi.get_latest_pm25() << std::endl;
+    std::cout << draw_str << std::endl;
+    #endif
 
     // main message loop
     MSG msg = {};
