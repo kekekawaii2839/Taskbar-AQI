@@ -2,7 +2,9 @@
 #include <string>
 #include <unordered_map>
 
-#define DEBUG
+#include <d2d1.h>
+
+// #define DEBUG
 
 #ifdef DEBUG
 #include <iostream>
@@ -27,4 +29,6 @@ public:
 
     bool fetch_24_hours_data();
     int get_latest_pm25();
+
+    D2D1::ColorF get_pm25_color(int pm25);
 };

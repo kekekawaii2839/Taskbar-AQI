@@ -101,17 +101,29 @@ int AQI::get_latest_pm25() {
     return aqiData.back().pm25;
 }
 
-// int main(int argc, char *argv[]) {
-//     // Convert argv[0] from char* to wchar_t*
-//     size_t size = mbstowcs(NULL, argv[0], 0);
-//     wchar_t *wideArgv0 = (wchar_t *)malloc((size + 1) * sizeof(wchar_t));
-// 
-//     Py_SetProgramName(wideArgv0);
-//     Py_Initialize();
-//     std::cout << add(1) << std::endl;
-//     std::cout << fetch_aqi_data_from_xml("http://www.stateair.net/web/rss/1/1.xml") << std::endl;
-//     Py_Finalize();
-//     // int temp;
-//     // std::cin >> temp;
-//     return 0;
-// }
+D2D1::ColorF AQI::get_pm25_color(int pm25) {
+    if (pm25 >=0 && pm25 <= 50) {
+        return D2D1::ColorF(0, 255, 0, 1);
+    }
+    else if (pm25 >= 51 && pm25 <= 100) {
+        return D2D1::ColorF(255, 255, 0, 1);
+    }
+    else if (pm25 >= 101 && pm25 <= 150) {
+        return D2D1::ColorF(255, 126, 0, 1);
+    }
+    else if (pm25 >= 151 && pm25 <= 200) {
+        return D2D1::ColorF(255, 0, 0, 1);
+    }
+    else if (pm25 >= 201 && pm25 <= 300) {
+        return D2D1::ColorF(153, 0, 76, 1);
+    }
+    else if (pm25 >= 301 && pm25 <= 500) {
+        return D2D1::ColorF(76, 0, 38, 1);
+    }
+    else if (pm25 >= 501) {
+        return D2D1::ColorF(87, 87, 87, 1);
+    }
+    else {
+        return D2D1::ColorF(255, 255, 255, 1);
+    }
+}

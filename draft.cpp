@@ -1,4 +1,4 @@
-#define DEBUG
+// #define DEBUG
 
 #include "taskbarWindow.h"
 #include "AQI.h"
@@ -10,8 +10,9 @@
 taskbarWindow* w;
 
 wchar_t draw_str[256];
+D2D1::ColorF brushColor(255, 255, 255, 1);
 
-void DrawTextToScreen(HWND hwnd, const wchar_t* text) {
+void DrawTextToScreen(HWND hwnd, const wchar_t* text, D2D1::ColorF brushColor) {
     ID2D1Factory* d2dFactory = nullptr;
     IDWriteFactory* dwriteFactory = nullptr;
     ID2D1HwndRenderTarget* renderTarget = nullptr;
@@ -39,7 +40,7 @@ void DrawTextToScreen(HWND hwnd, const wchar_t* text) {
     textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
     ID2D1SolidColorBrush* brush;
-    renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red), &brush);
+    renderTarget->CreateSolidColorBrush(brushColor, &brush);
 
     renderTarget->DrawText(text, wcslen(text), textFormat, D2D1::RectF(0, 0, static_cast<float>(size.width), static_cast<float>(size.height)), brush);
     renderTarget->EndDraw();
@@ -59,7 +60,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             PostQuitMessage(0);
             return 0;
         case WM_PAINT:
-            DrawTextToScreen(hwnd, draw_str);
+            DrawTextToScreen(hwnd, draw_str, brushColor);
             return 0;
         // case WA_ACTIVE:
         //     DrawTextToScreen(hwnd, L"Hello, World!");
@@ -84,12 +85,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     AQI aqi("http://www.stateair.net/web/rss/1/1.xml");
     aqi.fetch_24_hours_data();
-    swprintf_s(draw_str, L"%d", aqi.get_latest_pm25());
-    #ifdef DEBUG
-    std::cout<< aqi.aqiData[0].pm25 << std::endl;
-    std::cout << "PM2.5: " << aqi.get_latest_pm25() << std::endl;
-    std::cout << draw_str << std::endl;
-    #endif
+    int pm25 = aqi.get_latest_pm25();
+    swprintf_s(draw_str, L"%d", pm25);
+    brushColor = aqi.get_pm25_color(pm25);
 
     // main message loop
     MSG msg = {};
